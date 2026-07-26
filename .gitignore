@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Local development data
+src/data/finances.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
