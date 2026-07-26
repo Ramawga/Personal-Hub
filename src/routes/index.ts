@@ -2,6 +2,7 @@ import { useEffect, useMemo, useSyncExternalStore } from 'react'
 import { FinancesPage } from '../pages/FinancesPage'
 import { HomePage } from '../pages/HomePage'
 import { TodosPage } from '../pages/TodosPage'
+import { routeLabels } from './routeLabels'
 
 export type AppRoute = {
   element: () => React.JSX.Element | null
@@ -14,19 +15,19 @@ export const appRoutes: AppRoute[] = [
   {
     element: HomePage,
     id: 'home',
-    label: 'Home',
+    label: routeLabels.home,
     path: '/',
   },
   {
     element: FinancesPage,
     id: 'finances',
-    label: 'Financas',
+    label: routeLabels.finances,
     path: '/financas',
   },
   {
     element: TodosPage,
     id: 'todos',
-    label: 'A Fazeres',
+    label: routeLabels.todos,
     path: '/a-fazeres',
   },
 ]
