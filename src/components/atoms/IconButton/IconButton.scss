@@ -1,0 +1,24 @@
+@use '../../../styles/mixins' as *;
+@use '../../../styles/variables' as *;
+
+.icon-button {
+  @include compact-button;
+
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: $radius-md;
+  color: $color-text-muted;
+  background: transparent;
+  transition:
+    background-color $transition-fast,
+    color $transition-fast;
+
+  &:hover {
+    color: $color-text;
+    background: $color-surface-strong;
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}

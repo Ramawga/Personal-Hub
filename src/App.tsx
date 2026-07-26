@@ -1,11 +1,10 @@
-import './App.scss'
+import { AppShell } from './layouts/AppShell'
+import { appRoutes, useAppRoute } from './routes'
 
 function App() {
-  return (
-    <main className="app">
-      <h1>Ola, mundo!</h1>
-    </main>
-  )
+  const { activeRoute, navigateTo } = useAppRoute(appRoutes)
+
+  return <AppShell activeRoute={activeRoute} routes={appRoutes} onNavigate={navigateTo} />
 }
 
 export default App

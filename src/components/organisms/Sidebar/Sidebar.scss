@@ -1,0 +1,50 @@
+@use '../../../styles/mixins' as *;
+@use '../../../styles/variables' as *;
+
+.app-sidebar {
+  position: sticky;
+  top: 0;
+  width: $sidebar-collapsed-width;
+  height: 100vh;
+  overflow: hidden;
+  border-right: 1px solid $color-border;
+  background: rgba(24, 26, 34, 0.96);
+  padding: $space-4;
+  transition: width 220ms ease;
+
+  &:hover,
+  &:focus-within {
+    width: $sidebar-expanded-width;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: $space-3;
+    min-height: 3rem;
+    margin-bottom: $space-6;
+
+    strong {
+      @include truncate-text;
+
+      color: $color-text;
+      font-size: $font-size-md;
+      opacity: 0;
+      transform: translateX(-0.25rem);
+      transition:
+        opacity $transition-fast,
+        transform $transition-fast;
+    }
+  }
+
+  &:hover &__header strong,
+  &:focus-within &__header strong {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  &__nav {
+    display: grid;
+    gap: $space-2;
+  }
+}

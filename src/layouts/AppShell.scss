@@ -1,0 +1,14 @@
+@use '../styles/variables' as *;
+
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+  background:
+    linear-gradient(135deg, rgba(184, 140, 255, 0.08), transparent 32rem),
+    $color-background;
+
+  &__content {
+    flex: 1;
+    min-width: 0;
+  }
+}
