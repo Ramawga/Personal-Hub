@@ -47,7 +47,7 @@
   transform: translateX(0);
 }
 
-@media (max-width: 767px) {
+@include mq('768', max) {
   .sidebar-nav-item {
     min-height: 3.5rem;
     padding: 0 $space-4;

@@ -4,8 +4,7 @@
 .app-sidebar {
   position: sticky;
   top: 0;
-  width: $sidebar-collapsed-width;
-  height: 100vh;
+  @include size($sidebar-collapsed-width, 100vh);
   overflow: hidden;
   border-right: 1px solid $color-border;
   background: rgba(24, 26, 34, 0.96);
@@ -18,8 +17,8 @@
   }
 
   &__header {
-    display: flex;
-    align-items: center;
+    @include display-flex(center, flex-start);
+
     gap: $space-3;
     min-height: 3rem;
     margin-bottom: $space-6;
@@ -53,17 +52,16 @@
   display: none;
 }
 
-@media (max-width: 767px) {
+@include mq('768', max) {
   .mobile-header {
     position: fixed;
     z-index: 20;
     top: 0;
     left: 0;
-    display: flex;
-    align-items: center;
+    @include display-flex(center, flex-start);
+
     gap: $space-3;
-    width: 100%;
-    height: 4.5rem;
+    @include size(100%, 4.5rem);
     border-bottom: 1px solid $color-border;
     background: rgba(16, 17, 22, 0.96);
     padding: 0 $space-4;
@@ -78,8 +76,7 @@
     position: fixed;
     z-index: 30;
     inset: 0;
-    width: 100%;
-    height: 100vh;
+    @include size(100%, 100vh);
     padding: $space-4;
     transform: translateX(-100%);
     transition: transform 220ms ease;

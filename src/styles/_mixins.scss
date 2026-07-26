@@ -1,12 +1,153 @@
+@use 'sass:list';
+@use 'sass:map';
+@use 'sass:math';
+@use 'sass:meta';
+@use './variables' as *;
+
+@function _is-size($value) {
+  @return meta.type-of($value) == 'number' or $value == auto or $value == inherit or $value == initial;
+}
+
+@mixin display-flex($align: center, $justify: center, $direction: row) {
+  display: flex;
+  align-items: $align;
+  justify-content: $justify;
+  flex-direction: $direction;
+}
+
+@mixin grid($max-width: 1260px, $padding: 0 16px, $margin: 0 auto) {
+  margin: $margin;
+  max-width: $max-width;
+  padding: $padding;
+  width: 100%;
+}
+
+@mixin size($width, $height: $width) {
+  @if _is-size($height) {
+    height: $height;
+  } @else {
+    @error '`#{$height}` is not a valid length for the `$height` argument in the `size` mixin.';
+  }
+
+  @if _is-size($width) {
+    width: $width;
+  } @else {
+    @error '`#{$width}` is not a valid length for the `$width` argument in the `size` mixin.';
+  }
+}
+
+$font-size: 16 !default;
+$line-height: 16 !default;
+$font-units: (
+  'rem',
+  'em',
+  'px',
+  '%',
+  'pt',
+  'ch'
+) !default;
+
+@function has-font-unit($value) {
+  @return meta.type-of($value) == 'number' and list.index($font-units, math.unit($value)) != null;
+}
+
+@mixin font-size($size-value: $font-size) {
+  @if (has-font-unit($size-value)) {
+    font-size: $size-value;
+  } @else {
+    font-size: #{$size-value}px;
+  }
+}
+
+@mixin line-height($size-value: $line-height) {
+  @if meta.type-of($size-value) == 'number' and math.unit($size-value) == '%' {
+    line-height: $size-value;
+  } @else {
+    line-height: $size-value + px;
+    line-height: calc(#{$size-value} / #{$line-height}) + rem;
+  }
+}
+
+@mixin letter-spacing($letterspacing) {
+  @if meta.type-of($letterspacing) == 'number' and math.is-unitless($letterspacing) and $letterspacing != 0 {
+    letter-spacing: #{$letterspacing}px;
+  } @else {
+    letter-spacing: $letterspacing;
+  }
+}
+
+@mixin textConfig(
+  $color: $color-text,
+  $fontSize: $font-size,
+  $fontWeight: 500,
+  $line-height: 16,
+  $textAlign: left,
+  $textTransform: initial,
+  $letterspacing: 0,
+  $fontFamily: $font-family-base
+) {
+  color: $color;
+  @include font-size($fontSize);
+  font-weight: $fontWeight;
+  @include line-height($line-height);
+  @include letter-spacing($letterspacing);
+  text-align: $textAlign;
+  text-transform: $textTransform;
+  font-family: $fontFamily;
+}
+
+$breakpoints: (
+  '320': 320px,
+  '360': 360px,
+  '375': 375px,
+  '390': 390px,
+  '400': 400px,
+  '414': 414px,
+  '428': 428px,
+  '450': 450px,
+  '480': 480px,
+  '510': 510px,
+  '640': 640px,
+  '750': 750px,
+  '768': 768px,
+  '800': 800px,
+  '992': 992px,
+  '1000': 1000px,
+  '1024': 1024px,
+  '1025': 1025px,
+  '1026': 1026px,
+  '1200': 1200px,
+  '1253': 1253px,
+  '1300': 1300px,
+  '1350': 1350px,
+  '1440': 1440px,
+  '1500': 1500px,
+  '1800': 1800px,
+) !default;
+
+@mixin mq($width, $type: min) {
+  @if map.has-key($breakpoints, $width) {
+    $width: map.get($breakpoints, $width);
+
+    @if $type == max {
+      $width: $width - 1px;
+    }
+
+    @media only screen and (#{$type}-width: $width) {
+      @content;
+    }
+  }
+}
+
 @mixin focus-ring {
   outline: 2px solid rgba(184, 140, 255, 0.72);
   outline-offset: 3px;
 }
 
 @mixin compact-button {
+  @include display-flex;
+
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
   border: 0;
   cursor: pointer;
 }

@@ -3,9 +3,8 @@
 
 .icon-button {
   @include compact-button;
+  @include size(2.75rem);
 
-  width: 2.75rem;
-  height: 2.75rem;
   border-radius: $radius-md;
   color: $color-text-muted;
   background: transparent;
