@@ -1,4 +1,4 @@
-import { CheckSquare, CircleDollarSign, Home, PanelLeft } from 'lucide-react'
+import { CheckSquare, CircleDollarSign, Home, Menu, PanelLeft, X } from 'lucide-react'
 import { IconButton } from '../../atoms/IconButton'
 import { SidebarNavItem } from '../../molecules/SidebarNavItem'
 import type { AppRoute } from '../../../routes'
@@ -12,29 +12,53 @@ const routeIcons = {
 
 type SidebarProps = {
   activePath: string
+  isMobileMenuOpen: boolean
+  onClose: () => void
   routes: AppRoute[]
   onNavigate: (path: string) => void
+  onOpen: () => void
 }
 
-export function Sidebar({ activePath, routes, onNavigate }: SidebarProps) {
+export function Sidebar({
+  activePath,
+  isMobileMenuOpen,
+  onClose,
+  onNavigate,
+  onOpen,
+  routes,
+}: SidebarProps) {
   return (
-    <aside className="app-sidebar" aria-label="Menu principal">
-      <div className="app-sidebar__header">
-        <IconButton aria-label="Personal Hub" icon={<PanelLeft size={22} />} />
+    <>
+      <header className="mobile-header">
+        <IconButton aria-label="Abrir menu" icon={<Menu size={24} />} onClick={onOpen} />
         <strong>Personal Hub</strong>
-      </div>
+      </header>
 
-      <nav className="app-sidebar__nav">
-        {routes.map((route) => (
-          <SidebarNavItem
-            icon={routeIcons[route.id]}
-            isActive={route.path === activePath}
-            key={route.path}
-            label={route.label}
-            onClick={() => onNavigate(route.path)}
+      <aside
+        className={`app-sidebar${isMobileMenuOpen ? ' app-sidebar--open' : ''}`}
+        aria-label="Menu principal"
+      >
+        <div className="app-sidebar__header">
+          <IconButton
+            aria-label={isMobileMenuOpen ? 'Fechar menu' : 'Personal Hub'}
+            icon={isMobileMenuOpen ? <X size={22} /> : <PanelLeft size={22} />}
+            onClick={isMobileMenuOpen ? onClose : undefined}
           />
-        ))}
-      </nav>
-    </aside>
+          <strong>Personal Hub</strong>
+        </div>
+
+        <nav className="app-sidebar__nav">
+          {routes.map((route) => (
+            <SidebarNavItem
+              icon={routeIcons[route.id]}
+              isActive={route.path === activePath}
+              key={route.path}
+              label={route.label}
+              onClick={() => onNavigate(route.path)}
+            />
+          ))}
+        </nav>
+      </aside>
+    </>
   )
 }

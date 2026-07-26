@@ -12,3 +12,18 @@
     min-width: 0;
   }
 }
+
+@media (max-width: 767px) {
+  .app-shell {
+    display: block;
+    padding-top: 4.5rem;
+
+    &__content {
+      min-height: calc(100vh - 4.5rem);
+    }
+
+    &--menu-open {
+      overflow: hidden;
+    }
+  }
+}
