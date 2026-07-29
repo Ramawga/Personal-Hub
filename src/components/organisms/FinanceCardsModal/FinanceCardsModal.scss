@@ -1,0 +1,83 @@
+@use '../../../styles/mixins' as *;
+@use '../../../styles/variables' as *;
+
+.finance-cards-modal {
+  width: min(100%, 48rem);
+
+  &__list {
+    display: grid;
+    gap: $space-3;
+    margin-bottom: $space-5;
+
+    > p {
+      @include textConfig($color-text-muted, 14, 600, 18);
+
+      margin: 0;
+    }
+  }
+}
+
+.finance-card-summary {
+  display: grid;
+  gap: $space-4;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  background: $color-background;
+  padding: $space-4;
+
+  &__title {
+    @include display-flex(center, flex-start);
+
+    gap: $space-3;
+
+    svg {
+      color: $color-primary;
+      flex: 0 0 auto;
+    }
+
+    div {
+      display: grid;
+      gap: $space-1;
+    }
+
+    strong {
+      @include textConfig($color-text, 16, 800, 20);
+    }
+
+    span {
+      @include textConfig($color-text-muted, 13, 600, 16);
+    }
+  }
+
+  dl {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: $space-3;
+    margin: 0;
+
+    div {
+      display: grid;
+      gap: $space-1;
+      border: 1px solid $color-border;
+      border-radius: $radius-sm;
+      background: $color-surface;
+      padding: $space-3;
+    }
+
+    dt {
+      @include textConfig($color-text-muted, 12, 700, 14);
+    }
+
+    dd {
+      @include textConfig($color-text, 15, 800, 18);
+
+      margin: 0;
+    }
+  }
+}
+
+@include mq('768', max) {
+  .finance-card-summary dl {
+    grid-template-columns: 1fr;
+  }
+}
