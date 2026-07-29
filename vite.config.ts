@@ -7,6 +7,7 @@ import { defineConfig, type Plugin } from 'vite'
 const rootDir = fileURLToPath(new URL('.', import.meta.url))
 const financesFilePath = path.resolve(rootDir, 'src/data/finances.json')
 const emptyFinancesData = {
+  cards: [],
   tags: [],
   transactions: [],
 }

@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import type { FinanceTag, FinancesData, Transaction } from '../types/finances'
+import type { FinanceCard, FinanceTag, FinancesData, Transaction } from '../types/finances'
 import { createTagsFromTransactions, financesApiPath } from '../utils/finances'
 
 export function useFinancesData() {
+  const [cards, setCards] = useState<FinanceCard[]>([])
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [tags, setTags] = useState<FinanceTag[]>([])
   const [isLoadingData, setIsLoadingData] = useState(true)
@@ -25,7 +26,9 @@ export function useFinancesData() {
         if (isMounted) {
           const loadedTransactions = Array.isArray(data.transactions) ? data.transactions : []
           const loadedTags = Array.isArray(data.tags) ? data.tags : createTagsFromTransactions(loadedTransactions)
+          const loadedCards = Array.isArray(data.cards) ? data.cards : []
 
+          setCards(loadedCards)
           setTransactions(loadedTransactions)
           setTags(loadedTags)
           setDataError('')
@@ -48,8 +51,9 @@ export function useFinancesData() {
     }
   }, [])
 
-  async function persistFinances(nextTransactions: Transaction[], nextTags: FinanceTag[]) {
+  async function persistFinances(nextTransactions: Transaction[], nextTags: FinanceTag[], nextCards: FinanceCard[]) {
     const nextData: FinancesData = {
+      cards: nextCards,
       tags: nextTags,
       transactions: nextTransactions,
     }
@@ -85,7 +89,7 @@ export function useFinancesData() {
     setIsSavingData(true)
 
     try {
-      await persistFinances(nextTransactions, nextTags)
+      await persistFinances(nextTransactions, nextTags, cards)
       setDataError('')
 
       return true
@@ -111,7 +115,7 @@ export function useFinancesData() {
     setIsSavingData(true)
 
     try {
-      await persistFinances(nextTransactions, tags)
+      await persistFinances(nextTransactions, tags, cards)
       setDataError('')
     } catch {
       setTransactions(transactions)
@@ -121,8 +125,70 @@ export function useFinancesData() {
     }
   }
 
+  async function addTransactions(newTransactions: Transaction[], tagColor: string) {
+    if (isSavingData || newTransactions.length === 0) {
+      return false
+    }
+
+    const firstTransaction = newTransactions[0]
+    const existingTag = tags.find((tag) => tag.name.toLowerCase() === firstTransaction.tag.toLowerCase())
+    const nextTags = existingTag
+      ? tags.map((tag) =>
+          tag.name.toLowerCase() === firstTransaction.tag.toLowerCase() ? { ...tag, color: tagColor } : tag,
+        )
+      : [...tags, { color: tagColor, name: firstTransaction.tag }]
+    const nextTransactions = [...transactions, ...newTransactions]
+
+    setTransactions(nextTransactions)
+    setTags(nextTags)
+    setIsSavingData(true)
+
+    try {
+      await persistFinances(nextTransactions, nextTags, cards)
+      setDataError('')
+
+      return true
+    } catch {
+      setTransactions(transactions)
+      setTags(tags)
+      setDataError('Nao foi possivel salvar os lancamentos no arquivo JSON.')
+
+      return false
+    } finally {
+      setIsSavingData(false)
+    }
+  }
+
+  async function addCard(newCard: FinanceCard) {
+    if (isSavingData) {
+      return false
+    }
+
+    const nextCards = [...cards, newCard]
+
+    setCards(nextCards)
+    setIsSavingData(true)
+
+    try {
+      await persistFinances(transactions, tags, nextCards)
+      setDataError('')
+
+      return true
+    } catch {
+      setCards(cards)
+      setDataError('Nao foi possivel salvar o cartao no arquivo JSON.')
+
+      return false
+    } finally {
+      setIsSavingData(false)
+    }
+  }
+
   return {
+    addCard,
+    addTransactions,
     addTransaction,
+    cards,
     dataError,
     deleteTransaction,
     isLoadingData,
