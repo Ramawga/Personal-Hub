@@ -1,187 +1,88 @@
-import { WalletCards } from 'lucide-react'
-import { type FormEvent, useCallback, useEffect, useMemo, useState } from 'react'
+import { CreditCard, WalletCards } from 'lucide-react'
+import { useMemo } from 'react'
+import { FinanceCardsModal } from '../components/organisms/FinanceCardsModal'
 import { FinanceCalendar } from '../components/organisms/FinanceCalendar'
 import { FinanceDayModal } from '../components/organisms/FinanceDayModal'
 import { FinanceSummary } from '../components/organisms/FinanceSummary'
+import { useFinanceCardForm } from '../hooks/useFinanceCardForm'
+import { useFinancePageState } from '../hooks/useFinancePageState'
 import { useFinancesData } from '../hooks/useFinancesData'
+import { useFinanceTransactionForm } from '../hooks/useFinanceTransactionForm'
 import { routeLabels } from '../routes/routeLabels'
-import type { FinanceTag, PaymentMethod, SummaryFilter, Transaction, TransactionType } from '../types/finances'
 import {
-  buildCalendarDays,
   currencyFormatter,
-  defaultTagColors,
-  getPeriodRange,
+  getAccountedTransactions,
+  getTransactionsInRange,
+  groupExpensesByTag,
   sumTransactions,
-  toDateKey,
 } from '../utils/finances'
 import './FinancesPage.scss'
 
 export function FinancesPage() {
-  const { addTransaction, dataError, deleteTransaction, isLoadingData, isSavingData, tags, transactions } =
-    useFinancesData()
-  const [currentDateKey, setCurrentDateKey] = useState(toDateKey(new Date()))
-  const [visibleDate, setVisibleDate] = useState(() => {
-    const initialDate = new Date()
-
-    return new Date(initialDate.getFullYear(), initialDate.getMonth(), 1)
+  const financesData = useFinancesData()
+  const {
+    addCard,
+    addTransaction,
+    addTransactions,
+    cards,
+    dataError,
+    deleteTransaction,
+    isLoadingData,
+    isSavingData,
+    tags,
+    transactions,
+  } = financesData
+  const pageState = useFinancePageState(transactions)
+  const {
+    calendarDays,
+    changeMonth,
+    currentDateKey,
+    customEnd,
+    customStart,
+    isCardsModalOpen,
+    periodRange,
+    selectedDateKey,
+    selectedDateTransactions,
+    setCustomEnd,
+    setCustomStart,
+    setIsCardsModalOpen,
+    setSelectedDateKey,
+    setSummaryFilter,
+    summaryFilter,
+    visibleDate,
+  } = pageState
+  const cardForm = useFinanceCardForm({ addCard, isSavingData })
+  const transactionForm = useFinanceTransactionForm({
+    addTransaction,
+    addTransactions,
+    cards,
+    isSavingData,
+    selectedDateKey,
+    tags,
   })
-  const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null)
-  const [summaryFilter, setSummaryFilter] = useState<SummaryFilter>('monthly')
-  const [customStart, setCustomStart] = useState(() => {
-    const initialDate = new Date()
 
-    return toDateKey(new Date(initialDate.getFullYear(), initialDate.getMonth(), 1))
-  })
-  const [customEnd, setCustomEnd] = useState(() => toDateKey(new Date()))
-  const [formType, setFormType] = useState<TransactionType>('expense')
-  const [formPaymentMethod, setFormPaymentMethod] = useState<PaymentMethod>('pix')
-  const [formAmount, setFormAmount] = useState('')
-  const [formTag, setFormTag] = useState('')
-  const [formTagColor, setFormTagColor] = useState(defaultTagColors[0])
-  const [formDescription, setFormDescription] = useState('')
-
-  useEffect(() => {
-    const intervalId = window.setInterval(() => {
-      setCurrentDateKey(toDateKey(new Date()))
-    }, 60000)
-
-    return () => window.clearInterval(intervalId)
-  }, [])
-
-  const calendarDays = useMemo(() => buildCalendarDays(visibleDate), [visibleDate])
-  const periodRange = useMemo(
-    () => getPeriodRange(summaryFilter, visibleDate, customStart, customEnd, currentDateKey),
-    [currentDateKey, customEnd, customStart, summaryFilter, visibleDate],
+  const accountedTransactions = useMemo(
+    () => getAccountedTransactions(transactions, currentDateKey),
+    [currentDateKey, transactions],
   )
-
   const filteredTransactions = useMemo(
-    () =>
-      transactions.filter(
-        (transaction) => transaction.date >= periodRange.start && transaction.date <= periodRange.end,
-      ),
-    [periodRange.end, periodRange.start, transactions],
-  )
-
-  const selectedDateTransactions = useMemo(
-    () => transactions.filter((transaction) => transaction.date === selectedDateKey),
-    [selectedDateKey, transactions],
+    () => getTransactionsInRange(accountedTransactions, periodRange.start, periodRange.end),
+    [accountedTransactions, periodRange.end, periodRange.start],
   )
 
   const expenseTotal = sumTransactions(filteredTransactions, 'expense')
   const incomeTotal = sumTransactions(filteredTransactions, 'income')
   const balance = incomeTotal - expenseTotal
-  const generalBalance = sumTransactions(transactions, 'income') - sumTransactions(transactions, 'expense')
-
-  const getTagColor = useCallback(
-    (tagName: string, fallbackIndex = 0) =>
-      tags.find((tag) => tag.name.toLowerCase() === tagName.toLowerCase())?.color ?? defaultTagColors[
-        fallbackIndex % defaultTagColors.length
-      ],
-    [tags],
+  const generalBalance =
+    sumTransactions(accountedTransactions, 'income') - sumTransactions(accountedTransactions, 'expense')
+  const expensesByTag = useMemo(
+    () => groupExpensesByTag(filteredTransactions, tags),
+    [filteredTransactions, tags],
   )
 
-  const expensesByTag = useMemo(() => {
-    const grouped = filteredTransactions
-      .filter((transaction) => transaction.type === 'expense')
-      .reduce<Record<string, number>>((accumulator, transaction) => {
-        accumulator[transaction.tag] = (accumulator[transaction.tag] ?? 0) + transaction.amount
-
-        return accumulator
-      }, {})
-
-    return Object.entries(grouped)
-      .map(([tag, amount], index) => ({
-        amount,
-        color: getTagColor(tag, index),
-        tag,
-      }))
-      .sort((current, next) => next.amount - current.amount)
-  }, [filteredTransactions, getTagColor])
-
-  function changeMonth(direction: -1 | 1) {
-    setVisibleDate(new Date(visibleDate.getFullYear(), visibleDate.getMonth() + direction, 1))
-  }
-
-  function closeModal() {
+  function closeDayModal() {
     setSelectedDateKey(null)
-    setFormAmount('')
-    setFormTag('')
-    setFormDescription('')
-    setFormType('expense')
-    setFormPaymentMethod('pix')
-  }
-
-  function handleTagNameChange(tagName: string) {
-    const existingTag = tags.find((tag) => tag.name.toLowerCase() === tagName.trim().toLowerCase())
-
-    setFormTag(tagName)
-
-    if (existingTag) {
-      setFormTagColor(existingTag.color)
-    }
-  }
-
-  function selectTag(tag: FinanceTag) {
-    setFormTag(tag.name)
-    setFormTagColor(tag.color)
-  }
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-
-    if (!selectedDateKey || !formAmount || !formTag.trim() || isSavingData) {
-      return
-    }
-
-    const newTransaction: Transaction = {
-      amount: Number(formAmount),
-      date: selectedDateKey,
-      description: formDescription.trim() || formTag.trim(),
-      id: crypto.randomUUID(),
-      paymentMethod: formType === 'expense' ? formPaymentMethod : undefined,
-      tag: formTag.trim(),
-      type: formType,
-    }
-
-    if (await addTransaction(newTransaction, formTagColor)) {
-      setFormAmount('')
-      setFormTag('')
-      setFormDescription('')
-      setFormType('expense')
-      setFormPaymentMethod('pix')
-    }
-  }
-
-  function getEmptyChartText() {
-    if (isLoadingData) {
-      return 'Carregando dados...'
-    }
-
-    return 'Nenhum gasto no periodo'
-  }
-
-  function getEmptyBarText() {
-    if (isLoadingData) {
-      return 'Carregando dados...'
-    }
-
-    return 'Nenhum gasto para comparar.'
-  }
-
-  function getEmptyDayText() {
-    if (isLoadingData) {
-      return 'Carregando'
-    }
-
-    return 'Sem lancamentos'
-  }
-
-  function getEmptyModalText() {
-    if (isLoadingData) {
-      return 'Carregando lancamentos...'
-    }
-
-    return 'Nenhum lancamento cadastrado para esse dia.'
+    transactionForm.resetTransactionForm()
   }
 
   return (
@@ -197,14 +98,18 @@ export function FinancesPage() {
           <span>Saldo total</span>
           <strong>{currencyFormatter.format(generalBalance)}</strong>
         </div>
+        <button className="finances-page__cards-button" onClick={() => setIsCardsModalOpen(true)} type="button">
+          <CreditCard size={20} />
+          Cartoes
+        </button>
       </header>
 
       <FinanceSummary
         balance={balance}
         customEnd={customEnd}
         customStart={customStart}
-        emptyBarText={getEmptyBarText()}
-        emptyChartText={getEmptyChartText()}
+        emptyBarText={isLoadingData ? 'Carregando dados...' : 'Nenhum gasto para comparar.'}
+        emptyChartText={isLoadingData ? 'Carregando dados...' : 'Nenhum gasto no periodo'}
         expenseTotal={expenseTotal}
         expensesByTag={expensesByTag}
         incomeTotal={incomeTotal}
@@ -217,33 +122,57 @@ export function FinancesPage() {
       <FinanceCalendar
         calendarDays={calendarDays}
         currentDateKey={currentDateKey}
-        emptyDayText={getEmptyDayText()}
+        emptyDayText={isLoadingData ? 'Carregando' : 'Sem lancamentos'}
         onChangeMonth={changeMonth}
         onSelectDate={setSelectedDateKey}
         transactions={transactions}
         visibleDate={visibleDate}
       />
 
+      {isCardsModalOpen && (
+        <FinanceCardsModal
+          cardLimit={cardForm.cardLimit}
+          cardName={cardForm.cardName}
+          cardStatementDay={cardForm.cardStatementDay}
+          cardType={cardForm.cardType}
+          cards={cards}
+          currentDateKey={currentDateKey}
+          isSavingData={isSavingData}
+          onCardLimitChange={cardForm.setCardLimit}
+          onCardNameChange={cardForm.setCardName}
+          onCardStatementDayChange={cardForm.setCardStatementDay}
+          onCardTypeChange={cardForm.setCardType}
+          onClose={() => setIsCardsModalOpen(false)}
+          onSubmit={cardForm.handleCardSubmit}
+          transactions={transactions}
+        />
+      )}
+
       {selectedDateKey && (
         <FinanceDayModal
-          emptyModalText={getEmptyModalText()}
-          formAmount={formAmount}
-          formDescription={formDescription}
-          formPaymentMethod={formPaymentMethod}
-          formTag={formTag}
-          formTagColor={formTagColor}
-          formType={formType}
+          cards={cards}
+          emptyModalText={isLoadingData ? 'Carregando lancamentos...' : 'Nenhum lancamento cadastrado para esse dia.'}
+          formAmount={transactionForm.formAmount}
+          formCardId={transactionForm.formCardId}
+          formDescription={transactionForm.formDescription}
+          formInstallments={transactionForm.formInstallments}
+          formPaymentMethod={transactionForm.formPaymentMethod}
+          formTag={transactionForm.formTag}
+          formTagColor={transactionForm.formTagColor}
+          formType={transactionForm.formType}
           isSavingData={isSavingData}
-          onAmountChange={setFormAmount}
-          onClose={closeModal}
+          onAmountChange={transactionForm.setFormAmount}
+          onCardChange={transactionForm.setFormCardId}
+          onClose={closeDayModal}
           onDeleteTransaction={(transactionId) => void deleteTransaction(transactionId)}
-          onDescriptionChange={setFormDescription}
-          onPaymentMethodChange={setFormPaymentMethod}
-          onSelectTag={selectTag}
-          onSubmit={handleSubmit}
-          onTagChange={handleTagNameChange}
-          onTagColorChange={setFormTagColor}
-          onTypeChange={setFormType}
+          onDescriptionChange={transactionForm.setFormDescription}
+          onInstallmentsChange={transactionForm.setFormInstallments}
+          onPaymentMethodChange={transactionForm.handlePaymentMethodChange}
+          onSelectTag={transactionForm.selectTag}
+          onSubmit={transactionForm.handleSubmit}
+          onTagChange={transactionForm.handleTagNameChange}
+          onTagColorChange={transactionForm.setFormTagColor}
+          onTypeChange={transactionForm.setFormType}
           selectedDateKey={selectedDateKey}
           tags={tags}
           transactions={selectedDateTransactions}
