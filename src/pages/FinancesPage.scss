@@ -79,6 +79,22 @@
       margin-left: auto;
     }
   }
+
+  &__cards-button {
+    @include compact-button;
+
+    min-height: 3.5rem;
+    gap: $space-2;
+    border-radius: $radius-md;
+    background: $color-primary;
+    color: $color-background;
+    font-weight: 800;
+    padding: 0 $space-4;
+
+    &:hover {
+      background: $color-primary-strong;
+    }
+  }
 }
 
 .finances-summary,
@@ -401,6 +417,10 @@
     .is-expense {
       color: #ff6b6b;
     }
+
+    .is-scheduled {
+      color: $color-primary;
+    }
   }
 }
 
@@ -521,7 +541,8 @@
       gap: $space-2;
     }
 
-    input {
+    input,
+    select {
       border: 1px solid $color-border;
       border-radius: $radius-sm;
       background: $color-background;
@@ -586,6 +607,17 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
+  &__card-fields {
+    display: grid;
+    gap: $space-3;
+
+    p {
+      @include textConfig($color-text-muted, 13, 600, 18);
+
+      margin: 0;
+    }
+  }
+
   &__tags {
     @include display-flex(center, flex-start);
 
@@ -634,6 +666,10 @@
   }
 
   .finances-page__balance {
+    width: 100%;
+  }
+
+  .finances-page__cards-button {
     width: 100%;
   }
 }

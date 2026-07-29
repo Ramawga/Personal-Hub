@@ -1,21 +1,26 @@
 import { Trash2, X } from 'lucide-react'
 import type { CSSProperties, FormEvent } from 'react'
-import type { FinanceTag, PaymentMethod, Transaction, TransactionType } from '../../../types/finances'
+import type { FinanceCard, FinanceTag, PaymentMethod, Transaction, TransactionType } from '../../../types/finances'
 import { currencyFormatter, getPaymentMethodLabel } from '../../../utils/finances'
 
 type FinanceDayModalProps = {
+  cards: FinanceCard[]
   emptyModalText: string
   formAmount: string
+  formCardId: string
   formDescription: string
+  formInstallments: string
   formPaymentMethod: PaymentMethod
   formTag: string
   formTagColor: string
   formType: TransactionType
   isSavingData: boolean
   onAmountChange: (value: string) => void
+  onCardChange: (value: string) => void
   onClose: () => void
   onDeleteTransaction: (transactionId: string) => void
   onDescriptionChange: (value: string) => void
+  onInstallmentsChange: (value: string) => void
   onPaymentMethodChange: (paymentMethod: PaymentMethod) => void
   onSelectTag: (tag: FinanceTag) => void
   onSubmit: (event: FormEvent<HTMLFormElement>) => void
@@ -28,18 +33,23 @@ type FinanceDayModalProps = {
 }
 
 export function FinanceDayModal({
+  cards,
   emptyModalText,
   formAmount,
+  formCardId,
   formDescription,
+  formInstallments,
   formPaymentMethod,
   formTag,
   formTagColor,
   formType,
   isSavingData,
   onAmountChange,
+  onCardChange,
   onClose,
   onDeleteTransaction,
   onDescriptionChange,
+  onInstallmentsChange,
   onPaymentMethodChange,
   onSelectTag,
   onSubmit,
@@ -50,6 +60,8 @@ export function FinanceDayModal({
   tags,
   transactions,
 }: FinanceDayModalProps) {
+  const selectedCard = cards.find((card) => card.id === formCardId)
+
   return (
     <div className="finance-modal" role="dialog" aria-modal="true" aria-label="Detalhes do dia">
       <div className="finance-modal__content">
@@ -72,6 +84,12 @@ export function FinanceDayModal({
                   <span>
                     {transaction.description}
                     {transaction.paymentMethod ? ` - ${getPaymentMethodLabel(transaction.paymentMethod)}` : ''}
+                    {transaction.cardId
+                      ? ` - ${cards.find((card) => card.id === transaction.cardId)?.name ?? 'Cartao'}`
+                      : ''}
+                    {transaction.installments && transaction.installments > 1
+                      ? ` - ${transaction.installmentNumber}/${transaction.installments}`
+                      : ''}
                   </span>
                 </div>
                 <strong>
@@ -133,6 +151,39 @@ export function FinanceDayModal({
               >
                 Cartao
               </button>
+            </div>
+          )}
+
+          {formType === 'expense' && formPaymentMethod === 'card' && (
+            <div className="finance-modal__card-fields">
+              {cards.length > 0 ? (
+                <>
+                  <label>
+                    Cartao
+                    <select onChange={(event) => onCardChange(event.target.value)} value={formCardId}>
+                      <option value="">Selecione um cartao</option>
+                      {cards.map((card) => (
+                        <option key={card.id} value={card.id}>
+                          {card.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
+                    Parcelas
+                    <input
+                      disabled={selectedCard?.type === 'debit'}
+                      max="48"
+                      min="1"
+                      onChange={(event) => onInstallmentsChange(event.target.value)}
+                      type="number"
+                      value={selectedCard?.type === 'debit' ? '1' : formInstallments}
+                    />
+                  </label>
+                </>
+              ) : (
+                <p>Cadastre um cartao antes de lancar gastos no cartao.</p>
+              )}
             </div>
           )}
 

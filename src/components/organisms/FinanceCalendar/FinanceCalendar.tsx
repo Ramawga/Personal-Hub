@@ -1,6 +1,6 @@
 import { ArrowLeft, ArrowRight, CalendarDays, Plus } from 'lucide-react'
 import type { CalendarDay, Transaction } from '../../../types/finances'
-import { currencyFormatter, monthFormatter, sumTransactions, weekdayLabels } from '../../../utils/finances'
+import { currencyFormatter, isTransactionDue, monthFormatter, sumTransactions, weekdayLabels } from '../../../utils/finances'
 
 type FinanceCalendarProps = {
   calendarDays: CalendarDay[]
@@ -47,8 +47,16 @@ export function FinanceCalendar({
       <div className="finance-calendar__grid">
         {calendarDays.map((calendarDay) => {
           const dayTransactions = transactions.filter((transaction) => transaction.date === calendarDay.dateKey)
-          const dayIncome = sumTransactions(dayTransactions, 'income')
-          const dayExpense = sumTransactions(dayTransactions, 'expense')
+          const dueTransactions = dayTransactions.filter((transaction) => isTransactionDue(transaction, currentDateKey))
+          const scheduledCardTransactions = dayTransactions.filter(
+            (transaction) =>
+              transaction.type === 'expense' &&
+              transaction.paymentMethod === 'card' &&
+              !isTransactionDue(transaction, currentDateKey),
+          )
+          const dayIncome = sumTransactions(dueTransactions, 'income')
+          const dayExpense = sumTransactions(dueTransactions, 'expense')
+          const scheduledCardExpense = sumTransactions(scheduledCardTransactions, 'expense')
 
           return (
             <article
@@ -71,7 +79,10 @@ export function FinanceCalendar({
               <div className="finance-day__values">
                 {dayIncome > 0 && <strong className="is-income">+ {currencyFormatter.format(dayIncome)}</strong>}
                 {dayExpense > 0 && <strong className="is-expense">- {currencyFormatter.format(dayExpense)}</strong>}
-                {dayIncome === 0 && dayExpense === 0 && <span>{emptyDayText}</span>}
+                {scheduledCardExpense > 0 && (
+                  <strong className="is-scheduled">Programado - {currencyFormatter.format(scheduledCardExpense)}</strong>
+                )}
+                {dayIncome === 0 && dayExpense === 0 && scheduledCardExpense === 0 && <span>{emptyDayText}</span>}
               </div>
             </article>
           )
