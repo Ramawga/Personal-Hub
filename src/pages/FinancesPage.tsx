@@ -1,5 +1,6 @@
-import { CreditCard, WalletCards } from 'lucide-react'
-import { useMemo } from 'react'
+import { CreditCard, TrendingUp, WalletCards } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { FinanceBalanceForecastModal } from '../components/organisms/FinanceBalanceForecastModal'
 import { FinanceCardsModal } from '../components/organisms/FinanceCardsModal'
 import { FinanceCalendar } from '../components/organisms/FinanceCalendar'
 import { FinanceDayModal } from '../components/organisms/FinanceDayModal'
@@ -12,6 +13,7 @@ import { routeLabels } from '../routes/routeLabels'
 import {
   currencyFormatter,
   buildExpenseTimeSeries,
+  buildBalanceProjection,
   getAccountedTransactions,
   getTransactionsInRange,
   groupExpensesByTag,
@@ -41,12 +43,14 @@ export function FinancesPage() {
     currentDateKey,
     customEnd,
     customStart,
+    isBalanceForecastModalOpen,
     isCardsModalOpen,
     periodRange,
     selectedDateKey,
     selectedDateTransactions,
     setCustomEnd,
     setCustomStart,
+    setIsBalanceForecastModalOpen,
     setIsCardsModalOpen,
     setSelectedDateKey,
     setSummaryFilter,
@@ -62,6 +66,7 @@ export function FinancesPage() {
     selectedDateKey,
     tags,
   })
+  const [monthlyIncomeEstimates, setMonthlyIncomeEstimates] = useState<string[]>(Array.from({ length: 12 }, () => ''))
 
   const accountedTransactions = useMemo(
     () => getAccountedTransactions(transactions, currentDateKey),
@@ -86,10 +91,26 @@ export function FinancesPage() {
     () => buildExpenseTimeSeries(accountedTransactions, summaryFilter, visibleDate, periodRange),
     [accountedTransactions, periodRange, summaryFilter, visibleDate],
   )
+  const balanceProjection = useMemo(
+    () =>
+      buildBalanceProjection(
+        generalBalance,
+        monthlyIncomeEstimates.map((estimate) => Number(estimate) || 0),
+        transactions,
+        currentDateKey,
+      ),
+    [currentDateKey, generalBalance, monthlyIncomeEstimates, transactions],
+  )
 
   function closeDayModal() {
     setSelectedDateKey(null)
     transactionForm.resetTransactionForm()
+  }
+
+  function handleIncomeEstimateChange(index: number, value: string) {
+    setMonthlyIncomeEstimates((currentEstimates) =>
+      currentEstimates.map((estimate, estimateIndex) => (estimateIndex === index ? value : estimate)),
+    )
   }
 
   return (
@@ -105,10 +126,20 @@ export function FinancesPage() {
           <span>Saldo total</span>
           <strong>{currencyFormatter.format(generalBalance)}</strong>
         </div>
-        <button className="finances-page__cards-button" onClick={() => setIsCardsModalOpen(true)} type="button">
-          <CreditCard size={20} />
-          Cartoes
-        </button>
+        <div className="finances-page__actions">
+          <button className="finances-page__action-button" onClick={() => setIsCardsModalOpen(true)} type="button">
+            <CreditCard size={20} />
+            Cartoes
+          </button>
+          <button
+            className="finances-page__action-button"
+            onClick={() => setIsBalanceForecastModalOpen(true)}
+            type="button"
+          >
+            <TrendingUp size={20} />
+            Previsao
+          </button>
+        </div>
       </header>
 
       <FinanceSummary
@@ -154,6 +185,17 @@ export function FinancesPage() {
           onClose={() => setIsCardsModalOpen(false)}
           onSubmit={cardForm.handleCardSubmit}
           transactions={transactions}
+        />
+      )}
+
+      {isBalanceForecastModalOpen && (
+        <FinanceBalanceForecastModal
+          currentBalance={generalBalance}
+          incomeEstimates={monthlyIncomeEstimates}
+          onClose={() => setIsBalanceForecastModalOpen(false)}
+          onIncomeEstimatesChange={setMonthlyIncomeEstimates}
+          onIncomeEstimateChange={handleIncomeEstimateChange}
+          projectionMonths={balanceProjection}
         />
       )}
 

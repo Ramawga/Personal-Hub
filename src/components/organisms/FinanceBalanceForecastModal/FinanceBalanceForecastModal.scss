@@ -1,0 +1,206 @@
+@use '../../../styles/mixins' as *;
+@use '../../../styles/variables' as *;
+
+.finance-forecast-modal {
+  width: min(100%, 60rem);
+
+  &__overview {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: $space-3;
+    margin-bottom: $space-5;
+
+    article {
+      display: grid;
+      gap: $space-2;
+      border: 1px solid $color-border;
+      border-radius: $radius-md;
+      background: $color-background;
+      padding: $space-4;
+    }
+
+    span {
+      @include textConfig($color-text-muted, 13, 700, 16);
+    }
+
+    strong {
+      @include textConfig($color-text, 22, 800, 28);
+    }
+  }
+
+  &__mode {
+    display: grid;
+    gap: $space-3;
+    margin-bottom: $space-5;
+
+    label {
+      @include textConfig($color-text-muted, 13, 700, 16);
+
+      display: grid;
+      gap: $space-2;
+    }
+
+    input {
+      border: 1px solid $color-border;
+      border-radius: $radius-sm;
+      background: $color-background;
+      color: $color-text;
+      padding: $space-3;
+
+      &:focus-visible {
+        @include focus-ring;
+      }
+    }
+  }
+
+  &__mode-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: $space-2;
+
+    button {
+      border: 1px solid $color-border;
+      border-radius: $radius-sm;
+      background: $color-background;
+      color: $color-text-muted;
+      cursor: pointer;
+      padding: $space-3;
+
+      &.is-active,
+      &:hover {
+        border-color: $color-primary;
+        color: $color-text;
+        background: $color-primary-soft;
+      }
+    }
+  }
+
+  &__income-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: $space-3;
+
+    label {
+      @include textConfig($color-text-muted, 13, 700, 16);
+
+      display: grid;
+      gap: $space-2;
+    }
+
+    input {
+      border: 1px solid $color-border;
+      border-radius: $radius-sm;
+      background: $color-background;
+      color: $color-text;
+      padding: $space-3;
+
+      &:focus-visible {
+        @include focus-ring;
+      }
+    }
+  }
+
+  &__table {
+    display: grid;
+    max-height: 24rem;
+    overflow-y: auto;
+    border: 1px solid $color-border;
+    border-radius: $radius-md;
+    background: $color-background;
+
+    &::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: #d1d5db;
+      border-radius: 3px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: $color-primary;
+      border-radius: 3px;
+    }
+
+    header,
+    article {
+      display: grid;
+      grid-template-columns: minmax(7rem, 1fr) repeat(3, minmax(7rem, 1fr));
+      gap: $space-3;
+      align-items: center;
+      padding: $space-3;
+    }
+
+    header {
+      position: sticky;
+      z-index: 1;
+      top: 0;
+      border-bottom: 1px solid $color-border;
+      background: $color-surface;
+
+      span {
+        @include textConfig($color-text-muted, 12, 800, 14, left, uppercase, 0.5);
+      }
+    }
+
+    article + article {
+      border-top: 1px solid $color-border;
+    }
+
+    strong,
+    span {
+      @include textConfig($color-text, 13, 700, 16);
+    }
+  }
+
+  &__note {
+    @include display-flex(center, flex-start);
+
+    gap: $space-2;
+    margin-top: $space-4;
+    color: $color-text-muted;
+
+    span {
+      @include textConfig($color-text-muted, 13, 600, 16);
+    }
+
+    svg {
+      flex: 0 0 auto;
+      color: $color-primary;
+    }
+  }
+
+  .is-positive {
+    color: #64d2a6;
+  }
+
+  .is-negative {
+    color: #ff6b6b;
+  }
+}
+
+@include mq('1024', max) {
+  .finance-forecast-modal {
+    &__income-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    &__table {
+      overflow-x: auto;
+
+      header,
+      article {
+        min-width: 42rem;
+      }
+    }
+  }
+}
+
+@include mq('640', max) {
+  .finance-forecast-modal {
+    &__overview,
+    &__income-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+}

@@ -53,3 +53,12 @@ export type FinanceChartPoint = {
   color: string
   label: string
 }
+
+export type BalanceProjectionMonth = {
+  cardExpenses: number
+  endingBalance: number
+  estimatedIncome: number
+  label: string
+  monthKey: string
+  startingBalance: number
+}

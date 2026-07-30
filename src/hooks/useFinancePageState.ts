@@ -4,6 +4,7 @@ import { buildCalendarDays, getPeriodRange, toDateKey } from '../utils/finances'
 
 export function useFinancePageState(transactions: Transaction[]) {
   const [currentDateKey, setCurrentDateKey] = useState(toDateKey(new Date()))
+  const [isBalanceForecastModalOpen, setIsBalanceForecastModalOpen] = useState(false)
   const [isCardsModalOpen, setIsCardsModalOpen] = useState(false)
   const [visibleDate, setVisibleDate] = useState(() => {
     const initialDate = new Date()
@@ -47,12 +48,14 @@ export function useFinancePageState(transactions: Transaction[]) {
     currentDateKey,
     customEnd,
     customStart,
+    isBalanceForecastModalOpen,
     isCardsModalOpen,
     periodRange,
     selectedDateKey,
     selectedDateTransactions,
     setCustomEnd,
     setCustomStart,
+    setIsBalanceForecastModalOpen,
     setIsCardsModalOpen,
     setSelectedDateKey,
     setSummaryFilter,

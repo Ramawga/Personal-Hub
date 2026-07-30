@@ -1,4 +1,5 @@
 import type {
+  BalanceProjectionMonth,
   CalendarDay,
   FinanceCard,
   FinanceChartPoint,
@@ -26,6 +27,11 @@ export const monthFormatter = new Intl.DateTimeFormat('pt-BR', {
 
 export const shortMonthFormatter = new Intl.DateTimeFormat('pt-BR', {
   month: 'short',
+})
+
+export const projectionMonthFormatter = new Intl.DateTimeFormat('pt-BR', {
+  month: 'short',
+  year: 'numeric',
 })
 
 export function toDateKey(date: Date) {
@@ -351,4 +357,42 @@ export function buildCardInstallmentTransactions({
     tag,
     type: 'expense',
   }))
+}
+
+export function buildBalanceProjection(
+  currentBalance: number,
+  monthlyIncomeEstimates: number[],
+  transactions: Transaction[],
+  currentDateKey: string,
+): BalanceProjectionMonth[] {
+  const currentDate = parseDateKey(currentDateKey)
+  let projectedBalance = currentBalance
+
+  return Array.from({ length: 12 }, (_, index) => {
+    const monthDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + index + 1, 1)
+    const monthStart = toDateKey(monthDate)
+    const monthEnd = toDateKey(new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0))
+    const cardExpenses = transactions
+      .filter(
+        (transaction) =>
+          transaction.type === 'expense' &&
+          transaction.paymentMethod === 'card' &&
+          transaction.date >= monthStart &&
+          transaction.date <= monthEnd,
+      )
+      .reduce((total, transaction) => total + transaction.amount, 0)
+    const startingBalance = projectedBalance
+    const estimatedIncome = monthlyIncomeEstimates[index] ?? 0
+
+    projectedBalance = projectedBalance + estimatedIncome - cardExpenses
+
+    return {
+      cardExpenses,
+      endingBalance: projectedBalance,
+      estimatedIncome,
+      label: projectionMonthFormatter.format(monthDate),
+      monthKey: monthStart.slice(0, 7),
+      startingBalance,
+    }
+  })
 }

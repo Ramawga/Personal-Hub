@@ -54,7 +54,13 @@
     }
   }
 
-  &__cards-button {
+  &__actions {
+    @include display-flex(center, flex-start);
+
+    gap: $space-3;
+  }
+
+  &__action-button {
     @include compact-button;
 
     min-height: 3.5rem;
@@ -79,7 +85,8 @@
     }
 
     &__balance,
-    &__cards-button {
+    &__actions,
+    &__action-button {
       width: 100%;
     }
   }
