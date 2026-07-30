@@ -1,0 +1,75 @@
+@use '../../../styles/mixins' as *;
+@use '../../../styles/variables' as *;
+
+.finance-history {
+  display: grid;
+  max-height: 20rem;
+  gap: $space-3;
+  overflow-y: auto;
+  padding-right: $space-1;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #d1d5db;
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $color-primary;
+    border-radius: 3px;
+  }
+
+  > p {
+    @include textConfig($color-text-muted, 14, 600, 18);
+
+    margin: 0;
+  }
+
+  &__item {
+    @include display-flex(center, space-between);
+
+    gap: $space-3;
+    border: 1px solid $color-border;
+    border-left-width: 4px;
+    border-radius: $radius-md;
+    background: $color-background;
+    padding: $space-3;
+
+    &.is-expense {
+      border-left-color: #ff6b6b;
+    }
+
+    &.is-income {
+      border-left-color: #64d2a6;
+    }
+
+    div {
+      display: grid;
+      gap: $space-1;
+      min-width: 0;
+    }
+
+    strong {
+      @include textConfig($color-text, 14, 800, 18);
+    }
+
+    span {
+      @include textConfig($color-text-muted, 12, 600, 15);
+    }
+
+    > strong {
+      flex: 0 0 auto;
+    }
+
+    &.is-expense > strong {
+      color: #ff6b6b;
+    }
+
+    &.is-income > strong {
+      color: #64d2a6;
+    }
+  }
+}

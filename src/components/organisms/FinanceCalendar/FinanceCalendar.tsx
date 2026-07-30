@@ -1,6 +1,7 @@
 import { ArrowLeft, ArrowRight, CalendarDays, Plus } from 'lucide-react'
 import type { CalendarDay, Transaction } from '../../../types/finances'
 import { currencyFormatter, isTransactionDue, monthFormatter, sumTransactions, weekdayLabels } from '../../../utils/finances'
+import './FinanceCalendar.scss'
 
 type FinanceCalendarProps = {
   calendarDays: CalendarDay[]

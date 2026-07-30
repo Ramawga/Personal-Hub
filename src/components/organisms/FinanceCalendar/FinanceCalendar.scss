@@ -1,0 +1,149 @@
+@use '../../../styles/mixins' as *;
+@use '../../../styles/variables' as *;
+
+.finance-calendar {
+  margin-top: $space-5;
+  overflow-x: auto;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  background: rgba(24, 26, 34, 0.92);
+  padding: $space-5;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #d1d5db;
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $color-primary;
+    border-radius: 3px;
+  }
+
+  > header {
+    @include display-flex(center, space-between);
+
+    gap: $space-4;
+    margin-bottom: $space-4;
+
+    div,
+    nav {
+      @include display-flex(center, flex-start);
+
+      gap: $space-3;
+    }
+
+    h2 {
+      @include textConfig($color-text, 22, 800, 28, left, capitalize);
+
+      margin: 0;
+    }
+
+    button {
+      @include compact-button;
+      @include size(2.5rem);
+
+      border-radius: $radius-md;
+      color: $color-text-muted;
+      background: $color-background;
+
+      &:hover {
+        color: $color-text;
+        background: $color-surface-strong;
+      }
+    }
+  }
+
+  &__weekdays,
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: $space-2;
+  }
+
+  &__weekdays {
+    margin-bottom: $space-2;
+
+    span {
+      @include textConfig($color-text-muted, 12, 800, 14, center, uppercase, 0.5);
+    }
+  }
+}
+
+.finance-day {
+  min-height: 8rem;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  background: $color-background;
+  padding: $space-3;
+
+  &--muted {
+    opacity: 0.45;
+  }
+
+  &--today {
+    border-color: $color-primary;
+    box-shadow: inset 0 0 0 1px rgba(184, 140, 255, 0.46);
+  }
+
+  header {
+    @include display-flex(center, space-between);
+
+    margin-bottom: $space-3;
+
+    span {
+      @include textConfig($color-text, 16, 800, 18);
+    }
+
+    button {
+      @include compact-button;
+      @include size(1.75rem);
+
+      border-radius: $radius-sm;
+      color: $color-text-muted;
+      background: $color-surface;
+
+      &:hover {
+        color: $color-text;
+        background: $color-primary-soft;
+      }
+    }
+  }
+
+  &__values {
+    display: grid;
+    gap: $space-2;
+
+    strong,
+    span {
+      @include textConfig($color-text-muted, 12, 700, 14);
+    }
+
+    .is-income {
+      color: #64d2a6;
+    }
+
+    .is-expense {
+      color: #ff6b6b;
+    }
+
+    .is-scheduled {
+      color: $color-primary;
+    }
+  }
+}
+
+@include mq('768', max) {
+  .finance-calendar {
+    padding: $space-4;
+
+    &__weekdays,
+    &__grid {
+      min-width: 46rem;
+    }
+  }
+}

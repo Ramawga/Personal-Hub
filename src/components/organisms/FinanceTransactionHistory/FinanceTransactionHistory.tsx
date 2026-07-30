@@ -1,5 +1,6 @@
 import type { Transaction } from '../../../types/finances'
 import { currencyFormatter, getPaymentMethodLabel } from '../../../utils/finances'
+import './FinanceTransactionHistory.scss'
 
 type FinanceTransactionHistoryProps = {
   emptyText: string

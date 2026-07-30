@@ -7,6 +7,7 @@ import { LineChart } from './LineChart'
 import { PieChart } from './PieChart'
 import { getMaxAmount, getPieBackground } from './chartHelpers'
 import type { ChartDimension, ChartType } from './types'
+import './ExpenseBarChart.scss'
 
 type ExpenseBarChartProps = {
   emptyText: string

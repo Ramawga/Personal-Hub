@@ -2,6 +2,7 @@ import { Trash2, X } from 'lucide-react'
 import type { CSSProperties, FormEvent } from 'react'
 import type { FinanceCard, FinanceTag, PaymentMethod, Transaction, TransactionType } from '../../../types/finances'
 import { currencyFormatter, getPaymentMethodLabel } from '../../../utils/finances'
+import './FinanceDayModal.scss'
 
 type FinanceDayModalProps = {
   cards: FinanceCard[]

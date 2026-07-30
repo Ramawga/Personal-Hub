@@ -3,6 +3,7 @@ import { ExpenseBarChart } from '../../molecules/ExpenseBarChart'
 import type { FinanceChartPoint, SummaryFilter, Transaction } from '../../../types/finances'
 import { currencyFormatter } from '../../../utils/finances'
 import { FinanceTransactionHistory } from '../FinanceTransactionHistory'
+import './FinanceSummary.scss'
 
 type FinanceSummaryProps = {
   balance: number

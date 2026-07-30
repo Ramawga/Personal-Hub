@@ -1,0 +1,247 @@
+@use '../../../styles/mixins' as *;
+@use '../../../styles/variables' as *;
+
+.finance-modal {
+  @include display-flex;
+
+  position: fixed;
+  z-index: 50;
+  inset: 0;
+  background: rgba(16, 17, 22, 0.72);
+  padding: $space-4;
+
+  &__content {
+    width: min(100%, 34rem);
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+    border: 1px solid $color-border;
+    border-radius: $radius-md;
+    background: rgba(24, 26, 34, 0.92);
+    padding: $space-5;
+
+    &::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: #d1d5db;
+      border-radius: 3px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: $color-primary;
+      border-radius: 3px;
+    }
+
+    > header {
+      @include display-flex(center, space-between);
+
+      gap: $space-4;
+      margin-bottom: $space-5;
+
+      span {
+        @include textConfig($color-primary, 12, 800, 14, left, uppercase, 1);
+      }
+
+      h2 {
+        @include textConfig($color-text, 24, 800, 30);
+
+        margin: $space-1 0 0;
+      }
+
+      button {
+        @include compact-button;
+        @include size(2.5rem);
+
+        border-radius: $radius-md;
+        color: $color-text-muted;
+        background: $color-background;
+      }
+    }
+  }
+
+  &__list {
+    display: grid;
+    gap: $space-3;
+    margin-bottom: $space-5;
+
+    article {
+      @include display-flex(center, space-between);
+
+      gap: $space-3;
+      border: 1px solid $color-border;
+      border-radius: $radius-md;
+      background: $color-background;
+      padding: $space-3;
+
+      div {
+        display: grid;
+        gap: $space-1;
+      }
+
+      strong {
+        @include textConfig($color-text, 14, 800, 18);
+      }
+
+      span,
+      p {
+        @include textConfig($color-text-muted, 13, 600, 16);
+      }
+
+      &.is-income > strong {
+        color: #64d2a6;
+      }
+
+      &.is-expense > strong {
+        color: #ff6b6b;
+      }
+
+      > button {
+        @include compact-button;
+        @include size(2rem);
+
+        flex: 0 0 auto;
+        border-radius: $radius-sm;
+        color: $color-text-muted;
+        background: $color-surface;
+
+        &:hover {
+          color: #ff6b6b;
+          background: rgba(255, 107, 107, 0.12);
+        }
+
+        &:disabled {
+          cursor: wait;
+          opacity: 0.64;
+        }
+      }
+    }
+
+    p {
+      @include textConfig($color-text-muted, 14, 600, 18);
+
+      margin: 0;
+    }
+  }
+
+  &__form {
+    display: grid;
+    gap: $space-3;
+
+    label {
+      @include textConfig($color-text-muted, 13, 700, 16);
+
+      display: grid;
+      gap: $space-2;
+    }
+
+    input,
+    select {
+      border: 1px solid $color-border;
+      border-radius: $radius-sm;
+      background: $color-background;
+      color: $color-text;
+      padding: $space-3;
+
+      &:focus-visible {
+        @include focus-ring;
+      }
+    }
+
+    input[type='color'] {
+      @include size(100%, 2.75rem);
+
+      cursor: pointer;
+      padding: $space-1;
+    }
+
+    > button {
+      border: 0;
+      border-radius: $radius-md;
+      background: $color-primary;
+      color: $color-background;
+      cursor: pointer;
+      font-weight: 500;
+      padding: $space-3 $space-4;
+      text-transform: uppercase;
+
+      &:disabled {
+        cursor: wait;
+        opacity: 0.72;
+      }
+    }
+  }
+
+  &__type,
+  &__payment {
+    display: grid;
+    gap: $space-2;
+
+    button {
+      border: 1px solid $color-border;
+      border-radius: $radius-sm;
+      background: $color-background;
+      color: $color-text-muted;
+      cursor: pointer;
+      padding: $space-3;
+
+      &.is-active {
+        border-color: $color-primary;
+        color: $color-text;
+        background: $color-primary-soft;
+      }
+    }
+  }
+
+  &__type {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  &__payment {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  &__card-fields {
+    display: grid;
+    gap: $space-3;
+
+    p {
+      @include textConfig($color-text-muted, 13, 600, 18);
+
+      margin: 0;
+    }
+  }
+
+  &__tags {
+    @include display-flex(center, flex-start);
+
+    gap: $space-2;
+    overflow-x: auto;
+    padding-bottom: $space-1;
+    scrollbar-color: $color-primary #d1d5db;
+
+    &::-webkit-scrollbar {
+      height: 0.375rem;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: #d1d5db;
+      border-radius: 999px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: $color-primary;
+      border-radius: 999px;
+    }
+
+    button {
+      border: 1px solid var(--tag-color);
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--tag-color) 18%, transparent);
+      color: $color-text;
+      cursor: pointer;
+      flex: 0 0 auto;
+      padding: $space-2 $space-3;
+    }
+  }
+}
