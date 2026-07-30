@@ -1,6 +1,7 @@
 import type {
   CalendarDay,
   FinanceCard,
+  FinanceChartPoint,
   FinanceTag,
   CardType,
   PaymentMethod,
@@ -21,6 +22,10 @@ export const currencyFormatter = new Intl.NumberFormat('pt-BR', {
 export const monthFormatter = new Intl.DateTimeFormat('pt-BR', {
   month: 'long',
   year: 'numeric',
+})
+
+export const shortMonthFormatter = new Intl.DateTimeFormat('pt-BR', {
+  month: 'short',
 })
 
 export function toDateKey(date: Date) {
@@ -155,6 +160,131 @@ export function groupExpensesByTag(transactions: Transaction[], tags: FinanceTag
       tag,
     }))
     .sort((current, next) => next.amount - current.amount)
+}
+
+export function mapTagsToChartPoints(expensesByTag: Array<{ amount: number; color: string; tag: string }>) {
+  return expensesByTag.map((expense) => ({
+    amount: expense.amount,
+    color: expense.color,
+    label: expense.tag,
+  }))
+}
+
+function getMonthExpenseTransactions(transactions: Transaction[], visibleDate: Date) {
+  const monthStart = toDateKey(new Date(visibleDate.getFullYear(), visibleDate.getMonth(), 1))
+  const monthEnd = toDateKey(new Date(visibleDate.getFullYear(), visibleDate.getMonth() + 1, 0))
+
+  return getTransactionsInRange(transactions, monthStart, monthEnd)
+}
+
+function groupExpensesByDay(transactions: Transaction[], visibleDate: Date): FinanceChartPoint[] {
+  const daysInMonth = new Date(visibleDate.getFullYear(), visibleDate.getMonth() + 1, 0).getDate()
+
+  return Array.from({ length: daysInMonth }, (_, index) => {
+    const day = index + 1
+    const dateKey = toDateKey(new Date(visibleDate.getFullYear(), visibleDate.getMonth(), day))
+    const amount = sumTransactions(
+      transactions.filter((transaction) => transaction.date === dateKey),
+      'expense',
+    )
+
+    return {
+      amount,
+      color: defaultTagColors[index % defaultTagColors.length],
+      label: String(day).padStart(2, '0'),
+    }
+  })
+}
+
+function groupExpensesByMonth(transactions: Transaction[], visibleDate: Date): FinanceChartPoint[] {
+  const year = visibleDate.getFullYear()
+
+  return Array.from({ length: 12 }, (_, index) => {
+    const monthStart = toDateKey(new Date(year, index, 1))
+    const monthEnd = toDateKey(new Date(year, index + 1, 0))
+    const amount = sumTransactions(getTransactionsInRange(transactions, monthStart, monthEnd), 'expense')
+
+    return {
+      amount,
+      color: defaultTagColors[index % defaultTagColors.length],
+      label: shortMonthFormatter.format(new Date(year, index, 1)),
+    }
+  })
+}
+
+function getDaysBetween(start: string, end: string) {
+  const startDate = parseDateKey(start)
+  const endDate = parseDateKey(end)
+  const millisecondsPerDay = 24 * 60 * 60 * 1000
+
+  return Math.max(Math.round((endDate.getTime() - startDate.getTime()) / millisecondsPerDay), 0)
+}
+
+function groupPeriodExpensesByDay(transactions: Transaction[], start: string, end: string): FinanceChartPoint[] {
+  const daysBetween = getDaysBetween(start, end)
+  const startDate = parseDateKey(start)
+
+  return Array.from({ length: daysBetween + 1 }, (_, index) => {
+    const date = new Date(startDate)
+    date.setDate(startDate.getDate() + index)
+
+    const dateKey = toDateKey(date)
+    const amount = sumTransactions(
+      transactions.filter((transaction) => transaction.date === dateKey),
+      'expense',
+    )
+
+    return {
+      amount,
+      color: defaultTagColors[index % defaultTagColors.length],
+      label: `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}`,
+    }
+  })
+}
+
+function groupPeriodExpensesByMonth(transactions: Transaction[], start: string, end: string): FinanceChartPoint[] {
+  const startDate = parseDateKey(start)
+  const endDate = parseDateKey(end)
+  const points: FinanceChartPoint[] = []
+  let cursor = new Date(startDate.getFullYear(), startDate.getMonth(), 1)
+
+  while (cursor <= endDate) {
+    const monthStart = toDateKey(new Date(cursor.getFullYear(), cursor.getMonth(), 1))
+    const monthEnd = toDateKey(new Date(cursor.getFullYear(), cursor.getMonth() + 1, 0))
+    const amount = sumTransactions(getTransactionsInRange(transactions, monthStart, monthEnd), 'expense')
+
+    points.push({
+      amount,
+      color: defaultTagColors[points.length % defaultTagColors.length],
+      label: shortMonthFormatter.format(cursor),
+    })
+    cursor = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1)
+  }
+
+  return points
+}
+
+export function buildExpenseTimeSeries(
+  transactions: Transaction[],
+  summaryFilter: SummaryFilter,
+  visibleDate: Date,
+  periodRange: { end: string; start: string },
+) {
+  if (summaryFilter === 'yearly') {
+    return groupExpensesByMonth(transactions, visibleDate)
+  }
+
+  if (summaryFilter === 'period') {
+    const periodTransactions = getTransactionsInRange(transactions, periodRange.start, periodRange.end)
+
+    if (getDaysBetween(periodRange.start, periodRange.end) > 90) {
+      return groupPeriodExpensesByMonth(periodTransactions, periodRange.start, periodRange.end)
+    }
+
+    return groupPeriodExpensesByDay(periodTransactions, periodRange.start, periodRange.end)
+  }
+
+  return groupExpensesByDay(getMonthExpenseTransactions(transactions, visibleDate), visibleDate)
 }
 
 export function getNextStatementDate(dateKey: string, statementDay: number) {

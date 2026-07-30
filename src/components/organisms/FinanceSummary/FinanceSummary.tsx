@@ -1,8 +1,8 @@
 import { CircleDollarSign, ReceiptText, WalletCards } from 'lucide-react'
 import { ExpenseBarChart } from '../../molecules/ExpenseBarChart'
-import { ExpensePieChart } from '../../molecules/ExpensePieChart'
-import type { ExpenseByTag, SummaryFilter } from '../../../types/finances'
+import type { FinanceChartPoint, SummaryFilter, Transaction } from '../../../types/finances'
 import { currencyFormatter } from '../../../utils/finances'
+import { FinanceTransactionHistory } from '../FinanceTransactionHistory'
 
 type FinanceSummaryProps = {
   balance: number
@@ -11,12 +11,14 @@ type FinanceSummaryProps = {
   emptyBarText: string
   emptyChartText: string
   expenseTotal: number
-  expensesByTag: ExpenseByTag[]
   incomeTotal: number
   onCustomEndChange: (value: string) => void
   onCustomStartChange: (value: string) => void
   onSummaryFilterChange: (filter: SummaryFilter) => void
   summaryFilter: SummaryFilter
+  tagChartData: FinanceChartPoint[]
+  timeChartData: FinanceChartPoint[]
+  transactions: Transaction[]
 }
 
 const summaryFilters: Array<{ label: string; value: SummaryFilter }> = [
@@ -33,12 +35,14 @@ export function FinanceSummary({
   emptyBarText,
   emptyChartText,
   expenseTotal,
-  expensesByTag,
   incomeTotal,
   onCustomEndChange,
   onCustomStartChange,
   onSummaryFilterChange,
   summaryFilter,
+  tagChartData,
+  timeChartData,
+  transactions,
 }: FinanceSummaryProps) {
   return (
     <div className="finances-summary">
@@ -94,8 +98,8 @@ export function FinanceSummary({
       </div>
 
       <div className="finance-charts">
-        <ExpensePieChart emptyText={emptyChartText} expenseTotal={expenseTotal} expensesByTag={expensesByTag} />
-        <ExpenseBarChart emptyText={emptyBarText} expenseTotal={expenseTotal} expensesByTag={expensesByTag} />
+        <ExpenseBarChart emptyText={emptyBarText} tagChartData={tagChartData} timeChartData={timeChartData} />
+        <FinanceTransactionHistory emptyText={emptyChartText} transactions={transactions} />
       </div>
     </div>
   )

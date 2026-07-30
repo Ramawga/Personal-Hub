@@ -11,9 +11,11 @@ import { useFinanceTransactionForm } from '../hooks/useFinanceTransactionForm'
 import { routeLabels } from '../routes/routeLabels'
 import {
   currencyFormatter,
+  buildExpenseTimeSeries,
   getAccountedTransactions,
   getTransactionsInRange,
   groupExpensesByTag,
+  mapTagsToChartPoints,
   sumTransactions,
 } from '../utils/finances'
 import './FinancesPage.scss'
@@ -79,6 +81,11 @@ export function FinancesPage() {
     () => groupExpensesByTag(filteredTransactions, tags),
     [filteredTransactions, tags],
   )
+  const tagChartData = useMemo(() => mapTagsToChartPoints(expensesByTag), [expensesByTag])
+  const timeChartData = useMemo(
+    () => buildExpenseTimeSeries(accountedTransactions, summaryFilter, visibleDate, periodRange),
+    [accountedTransactions, periodRange, summaryFilter, visibleDate],
+  )
 
   function closeDayModal() {
     setSelectedDateKey(null)
@@ -111,12 +118,14 @@ export function FinancesPage() {
         emptyBarText={isLoadingData ? 'Carregando dados...' : 'Nenhum gasto para comparar.'}
         emptyChartText={isLoadingData ? 'Carregando dados...' : 'Nenhum gasto no periodo'}
         expenseTotal={expenseTotal}
-        expensesByTag={expensesByTag}
         incomeTotal={incomeTotal}
         onCustomEndChange={setCustomEnd}
         onCustomStartChange={setCustomStart}
         onSummaryFilterChange={setSummaryFilter}
         summaryFilter={summaryFilter}
+        tagChartData={tagChartData}
+        timeChartData={timeChartData}
+        transactions={filteredTransactions}
       />
 
       <FinanceCalendar

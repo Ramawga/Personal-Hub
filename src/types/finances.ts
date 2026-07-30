@@ -47,3 +47,9 @@ export type ExpenseByTag = {
   color: string
   tag: string
 }
+
+export type FinanceChartPoint = {
+  amount: number
+  color: string
+  label: string
+}
